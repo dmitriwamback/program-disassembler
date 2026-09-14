@@ -86,7 +86,7 @@ std::optional<uint64_t> extractDirectTarget(cs_insn* instruction, cs_arch archit
     return std::nullopt;
 }
 
-InstructionGroup classify(const std::string& mnemonic) {
+InstructionGroup Disassembly::Classify(const std::string& mnemonic) {
     std::string m = toLower(mnemonic);
 
     if (m == "call" || m == "bl" || m == "blr") {
@@ -105,7 +105,7 @@ InstructionGroup classify(const std::string& mnemonic) {
     return InstructionGroup::Normal;
 }
 
-const util::Symbol* resolveSymbol(uint64_t address, const std::vector<util::Symbol>& symbols) {
+const util::Symbol *Disassembly::ResolveSymbol(uint64_t address, const std::vector<util::Symbol> &symbols) {
     if (symbols.empty()) {
         return nullptr;
     }
@@ -133,8 +133,8 @@ const util::Symbol* resolveSymbol(uint64_t address, const std::vector<util::Symb
     return &sym;
 }
 
-std::string labelForAddress(uint64_t address, const std::vector<util::Symbol>& symbols) {
-    const util::Symbol* sym = resolveSymbol(address, symbols);
+std::string Disassembly::LabelForAddress(uint64_t address, const std::vector<util::Symbol>& symbols) {
+    const util::Symbol* sym = ResolveSymbol(address, symbols);
     if (!sym) {
         std::ostringstream ss;
         ss << "sub_" << std::hex << address;
@@ -150,7 +150,7 @@ std::string labelForAddress(uint64_t address, const std::vector<util::Symbol>& s
     return ss.str();
 }
 
-std::vector<Function> buildFunctions(const std::vector<Instruction>& instructions, const std::vector<util::Symbol>& symbols, uint64_t textBase, uint64_t textSize) {
+std::vector<Function> Disassembly::BuildFunctions(const std::vector<Instruction>& instructions, const std::vector<util::Symbol>& symbols, uint64_t textBase, uint64_t textSize) {
 
     std::vector<uint64_t> bounds;
     for (const util::Symbol& sym : symbols) {
@@ -201,7 +201,7 @@ std::vector<Function> buildFunctions(const std::vector<Instruction>& instruction
     return functions;
 }
 
-DisassemblyResult disassemble(const util::ParsedBinary& parsed) {
+DisassemblyResult Disassembly::Disassemble(const util::ParsedBinary& parsed) {
 
     ArchitectureMode architecture = resolveArchitectureMode(parsed);
     csh handle;
@@ -219,7 +219,7 @@ DisassemblyResult disassemble(const util::ParsedBinary& parsed) {
 
     for (size_t i = 0; i < count; i++) {
         cs_insn& insn = insns[i];
-        InstructionGroup instructionGroup = classify(insn.mnemonic);
+        InstructionGroup instructionGroup = Classify(insn.mnemonic);
 
         std::optional<uint64_t> target;
         if (instructionGroup == InstructionGroup::Jump || instructionGroup == InstructionGroup::Call) {
@@ -233,7 +233,7 @@ DisassemblyResult disassemble(const util::ParsedBinary& parsed) {
         out.size        = insn.size;
         out.group       = instructionGroup;
         out.target      = target;
-        out.targetName  = target ? labelForAddress(target.value(), parsed.symbols) : "";
+        out.targetName  = target ? LabelForAddress(target.value(), parsed.symbols) : "";
 
         disassemblyResult.instructions.push_back(out);
     }
@@ -249,6 +249,6 @@ DisassemblyResult disassemble(const util::ParsedBinary& parsed) {
         }
     }
 
-    disassemblyResult.functions = buildFunctions(disassemblyResult.instructions, parsed.symbols, parsed.text.baseAddr, parsed.text.size);
+    disassemblyResult.functions = BuildFunctions(disassemblyResult.instructions, parsed.symbols, parsed.text.baseAddr, parsed.text.size);
     return disassemblyResult;
 }

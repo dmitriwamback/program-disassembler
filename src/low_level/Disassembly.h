@@ -42,10 +42,11 @@ struct DisassemblyResult {
 
 class Disassembly {
 public:
-    static util::Symbol ResolveSymbol(uint64_t address, const std::vector<util::Symbol>& symbols);
+    static const util::Symbol *ResolveSymbol(uint64_t address, const std::vector<util::Symbol> &symbols);
     static std::string LabelForAddress(uint64_t address, const std::vector<util::Symbol>& symbols);
     static InstructionGroup Classify(const std::string& mnemonic);
     static DisassemblyResult Disassemble(const util::ParsedBinary& parsed);
+    static std::vector<Function> BuildFunctions(const std::vector<Instruction>& instructions, const std::vector<util::Symbol>& symbols, uint64_t textBase, uint64_t textSize);
 };
 
 
