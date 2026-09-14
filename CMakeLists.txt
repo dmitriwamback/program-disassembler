@@ -28,7 +28,8 @@ add_executable(disassembler main.cpp
         src/display/MainWindow.h
         src/util/format.h
         src/util/binary_types.h
-        src/util/read_bytes.h)
+        src/util/read_bytes.h
+        src/util/write_bytes.h)
 
 target_include_directories(disassembler PRIVATE
         ${CMAKE_SOURCE_DIR}
