@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QString>
 #include <cstdint>
+#include <iomanip>
+
 #include "../low_level/Disassembly.h"
 
 class QLabel;
@@ -15,6 +17,12 @@ class QPushButton;
 class QLineEdit;
 class QButtonGroup;
 class QStackedWidget;
+
+inline QString toHexAddr(uint64_t addr) {
+    std::ostringstream ss;
+    ss << "0x" << std::hex << std::setw(8) << std::setfill('0') << addr;
+    return QString::fromStdString(ss.str());
+}
 
 class PatchDialog: public QDialog {
     Q_OBJECT
@@ -29,12 +37,11 @@ public:
     void SetBusy(bool busy);
 
 signals:
-    void ApplyRequested();
+    void applyRequested();
 
 private:
     void SetMode(Mode mode);
     void RebuildDescription();
-    QString hexAddress(uint64_t address);
 
     Instruction instruction;
     Mode mode;
