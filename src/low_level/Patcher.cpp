@@ -35,12 +35,15 @@ TextSection Patcher::FindTextMachO(const std::vector<uint8_t> &data) {
                 std::string segname(reinterpret_cast<const char*>(&data[sectoff + 16]), 16);
                 uint64_t addr       = *reinterpret_cast<const uint64_t*>(&data[sectoff + 32]);
                 uint64_t size       = *reinterpret_cast<const uint64_t*>(&data[sectoff + 40]);
-                uint64_t fileoff    = *reinterpret_cast<const uint64_t*>(&data[sectoff + 48]);
+                uint32_t fileoff    = *reinterpret_cast<const uint32_t*>(&data[sectoff + 48]);
 
                 sectoff += 80;
 
+                sectname = sectname.c_str();
+                segname = segname.c_str();
+
                 if (sectname == "__text" && segname == "__TEXT") {
-                    return {fileoff, addr, isArm64};
+                    return {fileoff, size, addr, isArm64};
                 }
             }
         }
@@ -58,9 +61,9 @@ TextSection Patcher::FindTextELF(const std::vector<uint8_t> &data) {
     bool isArm64 = (e_machine == 0xB7);
 
     uint64_t e_shoff        = *reinterpret_cast<const uint64_t*>(&data[0x28]);
-    uint64_t e_shentsize    = *reinterpret_cast<const uint64_t*>(&data[0x3A]);
-    uint64_t e_shnum        = *reinterpret_cast<const uint64_t*>(&data[0x3C]);
-    uint64_t e_shstrndx     = *reinterpret_cast<const uint64_t*>(&data[0x3E]);
+    uint16_t e_shentsize    = *reinterpret_cast<const uint16_t*>(&data[0x3A]);
+    uint16_t e_shnum        = *reinterpret_cast<const uint16_t*>(&data[0x3C]);
+    uint16_t e_shstrndx     = *reinterpret_cast<const uint16_t*>(&data[0x3E]);
 
     auto sectionHeader = [&](int i) -> const uint8_t* {
         return &data[e_shoff + i * e_shentsize];
@@ -78,7 +81,7 @@ TextSection Patcher::FindTextELF(const std::vector<uint8_t> &data) {
 
         const char* name = reinterpret_cast<const char*>(&data[shstrtab_off + nameoff]);
         if (std::string(name) == ".text") {
-            return {offset, addr, size, isArm64};
+            return {offset, size, addr, isArm64};
         }
     }
     throw std::out_of_range("Could not find .text");
@@ -114,17 +117,17 @@ ClassifyResult Patcher::ClassifyARM64(const std::vector<uint8_t> &data, uint64_t
 }
 
 ClassifyResult Patcher::ClassifyX86(const std::vector<uint8_t> &data, uint64_t offset) {
-    if (offset > data.size()) {
+    if (offset >= data.size()) {
         return {BranchKind::NONE, 0};
     }
     uint8_t b0 = data[offset];
 
-    if (b0 > 0x70 && b0 <= 0x7F) {
+    if (b0 >= 0x70 && b0 <= 0x7F) {
         return {BranchKind::X86_SHORT_JCC, 2};
     }
     if (b0 == 0x0F && offset + 1 < data.size()) {
         uint8_t b1 = data[offset + 1];
-        if (b1 > 0x80 && b1 < 0x8F) {
+        if (b1 >= 0x80 && b1 <= 0x8F) {
             return {BranchKind::X86_NEAR_JCC, 6};
         }
     }

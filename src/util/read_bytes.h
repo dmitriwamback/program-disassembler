@@ -10,18 +10,18 @@
 
 namespace util {
     inline uint8_t readU8(const std::vector<uint8_t>& b, uint64_t off) {
-        if (off + 1 > b.size()) throw std::runtime_error("read out of bounds");
+        if (off + 1 > b.size()) throw std::runtime_error("readU8 read out of bounds");
         return b[off];
     }
 
     inline uint16_t readU16(const std::vector<uint8_t>& b, uint64_t off, bool le = true) {
-        if (off + 2 > b.size()) throw std::runtime_error("read out of bounds");
+        if (off + 2 > b.size()) throw std::runtime_error("readU16 read out of bounds");
         uint16_t v = uint16_t(b[off]) | (uint16_t(b[off + 1]) << 8);
         return le ? v : uint16_t((v << 8) | (v >> 8));
     }
 
     inline uint32_t readU32(const std::vector<uint8_t>& b, uint64_t off, bool le = true) {
-        if (off + 4 > b.size()) throw std::runtime_error("read out of bounds");
+        if (off + 4 > b.size()) throw std::runtime_error("readU32 read out of bounds");
         uint32_t v = uint32_t(b[off]) | (uint32_t(b[off + 1]) << 8) | (uint32_t(b[off + 2]) << 16) |
                      (uint32_t(b[off + 3]) << 24);
         return le ? v : __builtin_bswap32(v);
