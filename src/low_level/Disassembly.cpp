@@ -41,7 +41,7 @@ ArchitectureMode resolveArchitectureMode(const util::ParsedBinary& parsed) {
         switch (parsed.machoHeader.cputype) {
             case 0x01000007:
                 return {CS_ARCH_X86, CS_MODE_64};
-            case 0x010000c:
+            case 0x0100000c:
                 return {CS_ARCH_ARM64, CS_MODE_ARM};
             default:
                 throw std::runtime_error("Unknown architecture mode");
@@ -162,7 +162,7 @@ std::vector<Function> Disassembly::BuildFunctions(const std::vector<Instruction>
     bounds.push_back(textBase + textSize);
 
     std::vector<Function> functions;
-    for (size_t i = 0; i < bounds.size(); i++) {
+    for (size_t i = 0; i + 1 < bounds.size(); i++) {
         uint64_t start = bounds[i];
         uint64_t end = bounds[i + 1];
 
@@ -195,7 +195,7 @@ std::vector<Function> Disassembly::BuildFunctions(const std::vector<Instruction>
             funcIndex++;
         }
         if (funcIndex < functions.size()) {
-            functions[funcIndex].instructionIndices.push_back(funcIndex);
+            functions[funcIndex].instructionIndices.push_back(i);
         }
     }
     return functions;
@@ -233,6 +233,7 @@ DisassemblyResult Disassembly::Disassemble(const util::ParsedBinary& parsed) {
         out.size        = insn.size;
         out.group       = instructionGroup;
         out.target      = target;
+        out.mnemonic    = insn.mnemonic;
         out.targetName  = target ? LabelForAddress(target.value(), parsed.symbols) : "";
 
         disassemblyResult.instructions.push_back(out);

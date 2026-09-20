@@ -27,14 +27,14 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
 
 protected:
-    //bool eventFilter(QObject *watched, QEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
-    //void OpenBinary();
-    //void DownloadPatched();
-    //void onListingCellClicked(int row, int column);
-    //void onListingCellEntered(int row, int column);
-    //void onSidebarItemClicked(QTreeWidgetItem* item, int column);
+    void OpenBinary();
+    void DownloadPatched();
+    void onListingCellClicked(int row, int column);
+    void onListingCellEntered(int row, int column);
+    void onSidebarItemClicked(QTreeWidgetItem* item, int column);
 
 private:
     struct PatchRecord {
@@ -79,7 +79,7 @@ private:
     QTabWidget* tabs;
     QTableWidget* listingTable;
     QTableWidget* symbolTable;
-    QTableWidget* sectionTable;
+    QTableWidget* sectionsTable;
     QLabel* emptyStateLabel;
     QWidget* workspaceWidget;
 };

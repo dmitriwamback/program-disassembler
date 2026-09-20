@@ -8,6 +8,7 @@
 
 
 class Binary {
+public:
     static util::ParsedBinary ParseBinary(const std::vector<uint8_t>& buffer);
     static util::ParsedBinary Reslice(const util::ParsedBinary& parsed, const std::vector<uint8_t>& fullBytes);
 };
